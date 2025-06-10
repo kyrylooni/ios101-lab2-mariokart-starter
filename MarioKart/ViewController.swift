@@ -58,17 +58,16 @@ class ViewController: UIViewController,
   
   
   // Called when user taps on the mushroom
-  @IBAction func didTapMushroom(_ sender: UITapGestureRecognizer) {
-    animateMushroom()
-    
-    // Exercise 1: Assign the result of MushroomGenerator.maybeGenerateMushroomPowerup()
-    // to a variable. Print something if it's not nil
-    // ...
-    
-    // Exercise 2: Use the powerup on Mario using the useMushroomPowerupOnMario function
-    // ...
-  }
-  
+    @IBAction func didTapMushroom(_ sender: UITapGestureRecognizer) {
+        animateMushroom()
+        
+        guard let powerup = MushroomGenerator.maybeGenerateMushroomPowerup() else {
+            print("No powerup was generated.")
+            return
+        }
+        
+        useMushroomPowerupOnMario(powerup: powerup)
+    }
   private func useMushroomPowerupOnMario(powerup: MushroomPowerup) {
     scale(kart: kartView1)
   }
@@ -80,10 +79,31 @@ class ViewController: UIViewController,
     decipher(mysteryBox: mysteryBox)
   }
   
-  // Exercise 3: Decipher the mystery box and apply the correct effect on mario
-  private func decipher(mysteryBox: MysteryBox) {
-    
-  }
+    // Exercise 3: Decipher the mystery box and apply the correct effect on mario
+    private func decipher(mysteryBox: MysteryBox) {
+        // Safely attempt to cast mysteryEffect to a dictionary
+        guard let effectDictionary = mysteryBox.mysteryEffect as? [String: String] else {
+            assertionFailure("Expecting value of type [String: String]")
+            return
+        }
+
+        // Safely unwrap the "effect" value from the dictionary
+        guard let effect = effectDictionary["effect"] else {
+            assertionFailure("Expecting non-nil value for key 'effect'")
+            return
+        }
+
+        // Apply the appropriate effect on Mario
+        if effect == "translate" {
+            translate(kart: kartView1, by: view.bounds.width)
+        } else if effect == "rotate" {
+            rotate(kart: kartView1)
+        } else if effect == "scale" {
+            scale(kart: kartView1)
+        } else {
+            assertionFailure("Unexpected effect: \(effect)")
+        }
+    }
   
   private func translate(kart: UIView?,
                          by xPosition: Double) {
@@ -130,19 +150,38 @@ class ViewController: UIViewController,
     applySpeedMultiplierSetting(settings)
   }
   
-  // Exercise 4: Implement applyNumKartsSetting to show the correct number of karts
-  func applyNumKartsSetting(_ settings: [String : Any]) {
-    
-  }
-  
+    // Exercise 4: Implement applyNumKartsSetting to show the correct number of karts
+    func applyNumKartsSetting(_ settings: [String : Any]) {
+        // Attempt to extract "numKarts" value as Int
+        guard let numKarts = settings["numKarts"] as? Int else {
+            assertionFailure("Expecting Int for key 'numKarts', but got nil or wrong type")
+            return
+        }
+
+        // Show/hide karts based on numKarts value
+        kartView0.isHidden = numKarts < 2
+        kartView2.isHidden = numKarts < 3
+    }
   // Exercise 5: Implement applyKartSizeSetting to set the correct kart size
-  func applyKartSizeSetting(_ settings: [String : Any]) {
-    
-  }
+    func applyKartSizeSetting(_ settings: [String : Any]) {
+      let kartSizeMultiplier = settings["kartSize"] as! Int
+      let kartSize = 1.0 + 0.05 * Double(kartSizeMultiplier)
+      let transform = CGAffineTransformIdentity.scaledBy(x: kartSize, y: kartSize)
+      kartView0.transform = transform
+      kartView1.transform = transform
+      kartView2.transform = transform
+    }
   
-  // Exercise 6: Implement applySpeedMultiplierSetting to set the correct speed
-  func applySpeedMultiplierSetting(_ settings: [String : Any]) {
-    
-  }
+    // Exercise 6: Implement applySpeedMultiplierSetting to set the correct speed
+    func applySpeedMultiplierSetting(_ settings: [String : Any]) {
+        // Safely cast the speed multiplier from settings
+        guard let speedMultiplier = settings["speedMultiplier"] as? Int else {
+            assertionFailure("Expecting Int for key 'speedMultiplier', but got nil or wrong type")
+            return
+        }
+        
+        // Assign the speedMultiplier as a Double
+        self.speedMultiplier = Double(speedMultiplier)
+    }
 }
 
